@@ -84,11 +84,11 @@ a{color:#0b6aa2;text-decoration:none}
 <header>
 <h1>🌿 مدرّب تحفيظ القرآن — v5.2</h1>
 <div id="toggles">
-  <span id="soundToggle" class="pill">🔈</span>
-  <span id="themeToggle" class="pill">🌙</span>
+  <span id="soundToggle" class="pill" title="تشغيل/إيقاف الأصوات">🔈</span>
+  <span id="themeToggle" class="pill" title="وضع الليل/النهار">🌙</span>
 </div>
 </header>
-<div id="hint">⬅️ الكلمة التالية — ⬇️ تبديل الخطأ — ➡️ عودة | أثناء المراجعة: كل ضغطة ⬅️ تُكمل حتى ما قبل الخطأ التالي.</div>
+<div id="hint">⬅️ الكلمة التالية — ⬇️ تبديل الخطأ — ➡️ عودة | أثناء المراجعة: كل ضغطة ⬅️ تُكمل حتى ما قبل الخطأ التالي وتُبقي التلوين السابق.</div>
 
 <main>
 <section id="start">
@@ -104,22 +104,22 @@ a{color:#0b6aa2;text-decoration:none}
   <h3>🕌 نطاق محدد</h3>
   <div class="row">
     <label>من سورة
-      <input id="fromSurahInput" list="surahList">
+      <input id="fromSurahInput" list="surahList" placeholder="اكتب اسم السورة">
       <datalist id="surahList"></datalist>
       <select id="fromSurah"></select>
     </label>
     <label>آية
-      <input id="fromAyahInput" type="number" min="1" style="width:70px;">
+      <input id="fromAyahInput" type="number" min="1" style="width:90px;" placeholder="رقم">
       <select id="fromAyah"></select>
     </label>
   </div>
   <div class="row">
     <label>إلى سورة
-      <input id="toSurahInput" list="surahList">
+      <input id="toSurahInput" list="surahList" placeholder="اكتب اسم السورة">
       <select id="toSurah"></select>
     </label>
     <label>آية
-      <input id="toAyahInput" type="number" min="1" style="width:70px;">
+      <input id="toAyahInput" type="number" min="1" style="width:90px;" placeholder="رقم">
       <select id="toAyah"></select>
     </label>
   </div>
@@ -134,14 +134,14 @@ a{color:#0b6aa2;text-decoration:none}
   <h3>🔢 توليد نطاق بعدد كلمات</h3>
   <div class="row">
     <label>بدءًا من سورة
-      <input id="countSurahInput" list="surahList">
+      <input id="countSurahInput" list="surahList" placeholder="اكتب اسم السورة">
       <select id="countSurah"></select>
     </label>
     <label>آية
-      <input id="countAyahInput" type="number" min="1" style="width:70px;">
+      <input id="countAyahInput" type="number" min="1" style="width:90px;" placeholder="رقم">
       <select id="countAyah"></select>
     </label>
-    <label>عدد الكلمات <input id="wordCount" type="number" min="1" value="100"></label>
+    <label>عدد الكلمات <input id="wordCount" type="number" min="1" value="100" style="width:110px;"></label>
   </div>
   <div class="row">
     <button class="btn" id="generateCountBtn">توليد النطاق</button>
@@ -150,12 +150,17 @@ a{color:#0b6aa2;text-decoration:none}
   <div id="countInfo" class="saveMeta" style="margin-top:6px;"></div>
 </section>
 
-<section id="panelSaved" class="panel"><h3>🧩 محفوظاتي</h3><div id="savedList"></div>
-  <div class="row" style="margin-top:8px"><button class="btn" id="backHome3">عودة</button></div>
+<section id="panelSaved" class="panel">
+  <h3>🧩 محفوظاتي</h3>
+  <div id="savedList"></div>
+  <div class="row" style="margin-top:8px">
+    <button class="btn" id="backHome3">عودة</button>
+  </div>
 </section>
 
 <section id="textWrap" style="display:none;">
-  <div id="text"></div><div id="progress"></div>
+  <div id="text"></div>
+  <div id="progress"></div>
   <div class="bar">
     <button id="nextBtn" class="ctrl">➡️ الكلمة التالية</button>
     <button id="toggleWrongBtn" class="ctrl">🔁 تبديل الخطأ</button>
@@ -168,48 +173,111 @@ a{color:#0b6aa2;text-decoration:none}
 </main>
 
 <script>
-/* ربط الأزرار الرئيسية */
-document.getElementById('btnModeRange').onclick=()=> showPanel(panelRange);
-document.getElementById('btnModeCount').onclick=()=> showPanel(panelCount);
-document.getElementById('btnModeSaved').onclick=()=> { showPanel(panelSaved); renderSavedList(); };
-document.getElementById('backHome1').onclick=()=> backHome();
-document.getElementById('backHome2').onclick=()=> backHome();
-document.getElementById('backHome3').onclick=()=> backHome();
+/* الأزرار الرئيسية */
+const startSec=document.getElementById('start');
+const panelRange=document.getElementById('panelRange');
+const panelCount=document.getElementById('panelCount');
+const panelSaved=document.getElementById('panelSaved');
+function hideAllPanels(){startSec.style.display='none';panelRange.style.display='none';panelCount.style.display='none';panelSaved.style.display='none';}
+function showPanel(p){hideAllPanels();p.style.display='block';}
+function backHome(){hideAllPanels();startSec.style.display='grid';}
+document.getElementById('btnModeRange').onclick=()=>showPanel(panelRange);
+document.getElementById('btnModeCount').onclick=()=>showPanel(panelCount);
+document.getElementById('btnModeSaved').onclick=()=>{showPanel(panelSaved);renderSavedList();};
+document.getElementById('backHome1').onclick=()=>backHome();
+document.getElementById('backHome2').onclick=()=>backHome();
+document.getElementById('backHome3').onclick=()=>backHome();
 
-/* لاحقًا هنا ضع بقية السكربت من إصدارك الحالي v5.1
-   فقط استبدل دالة fillSurahDropdowns() كما يلي: */
+/* الحالة العامة */
+let Q=null, FLAT=null;
+let words=[], i=0, state="idle";
+let reviewList=[], step=1, coloredErrors=[];
+let ctxCount=10;
+let currentRangeMeta=null;
+const LS_SAVED="memorizer_saved_ranges";
+const LS_SOUND="memorizer_sound_enabled";
+const LS_THEME="memorizer_theme_dark";
 
-function fillSurahDropdowns(){
-  const fS=document.getElementById('fromSurah');
-  const tS=document.getElementById('toSurah');
-  const cS=document.getElementById('countSurah');
-  const datalist=document.getElementById('surahList');
-  datalist.innerHTML="";
-  for(const s of Q.surahs){
-    const opt1=new Option(s.name_ar,s.index);
-    const opt2=new Option(s.name_ar,s.index);
-    const opt3=new Option(s.name_ar,s.index);
-    fS.add(opt1);tS.add(opt2);cS.add(opt3);
-    const dOpt=document.createElement('option');dOpt.value=s.name_ar;datalist.appendChild(dOpt);
-  }
-  fS.onchange=()=>fillAyahs('fromSurah','fromAyah',1);
-  tS.onchange=()=>fillAyahs('toSurah','toAyah');
-  cS.onchange=()=>fillAyahs('countSurah','countAyah',1);
-  // ارتباط الإدخال بالنصوص
-  document.getElementById('fromSurahInput').oninput=e=>syncSurahInput(e,fS);
-  document.getElementById('toSurahInput').oninput=e=>syncSurahInput(e,tS);
-  document.getElementById('countSurahInput').oninput=e=>syncSurahInput(e,cS);
-  fS.value="1";tS.value="1";cS.value="1";
-  fillAyahs('fromSurah','fromAyah',1);
-  const first=Q.surahs.find(x=>x.index===1);
-  fillAyahs('toSurah','toAyah',first.ayah_count);
-  fillAyahs('countSurah','countAyah',1);
-}
-function syncSurahInput(e,sel){
-  const val=e.target.value.trim();
-  const s=Q.surahs.find(x=>x.name_ar===val);
-  if(s){sel.value=s.index;sel.dispatchEvent(new Event('change'));}
-}
+/* DOM */
+const textWrap=document.getElementById('textWrap');
+const textDiv=document.getElementById('text');
+const prog=document.getElementById('progress');
+const nextBtn=document.getElementById('nextBtn');
+const toggleBtn=document.getElementById('toggleWrongBtn');
+const backBtn=document.getElementById('backBtn');
+const startReviewBtn=document.getElementById('startReviewBtn');
+const restartBtn=document.getElementById('restartBtn');
+const saveRangeBtn=document.getElementById('saveRangeBtn');
+const soundToggle=document.getElementById('soundToggle');
+const themeToggle=document.getElementById('themeToggle');
+const rangeInfo=document.getElementById('rangeInfo');
+const countInfo=document.getElementById('countInfo');
+
+/* أدوات */
+function escapeHTML(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function splitWords(ar){return ar.trim().split(/\s+/).filter(Boolean);}
+function linearize(Q){const out=[];for(const s of Q.surahs){let a=1;for(const t of s.ayahs){out.push({sid:s.index,ay:a,text:t,words:splitWords(t)});a++;}}return out;}
+function refToFlatIndex(ref){for(let idx=0;idx<FLAT.length;idx++){if(FLAT[idx].sid===ref.s&&FLAT[idx].ay===ref.a)return idx;}return -1;}
+function surahName(sid){const s=Q.surahs.find(x=>x.index===sid);return s?s.name_ar:("سورة "+sid);}
+function scrollToBottom(){textDiv.scrollTop=textDiv.scrollHeight;window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});}
+
+/* الصوت */
+let ac=null;function ensureAC(){if(!ac)ac=new (window.AudioContext||window.webkitAudioContext)();}
+let soundEnabled=(localStorage.getItem(LS_SOUND)!=="0");
+function updateSoundIcon(){soundToggle.textContent=soundEnabled?"🔈":"🔇";}
+function playTone({freq=660,dur=0.15,type='sine',gain=0.06}){if(!soundEnabled)return;ensureAC();const now=ac.currentTime;const o=ac.createOscillator();const g=ac.createGain();o.type=type;o.frequency.setValueAtTime(freq,now);g.gain.setValueAtTime(0,now);g.gain.linearRampToValueAtTime(gain,now+0.01);g.gain.exponentialRampToValueAtTime(0.0001,now+dur);o.connect(g).connect(ac.destination);o.start(now);o.stop(now+dur+.02);}
+function chime(){playTone({freq:880,dur:0.12});setTimeout(()=>playTone({freq:1320,dur:0.12}),120);}
+function pageFlip(){playTone({freq:220,dur:0.05,type:'triangle',gain:0.04});setTimeout(()=>playTone({freq:260,dur:0.05,type:'triangle',gain:0.035}),60);setTimeout(()=>playTone({freq:200,dur:0.05,type:'triangle',gain:0.03}),120);}
+function woodClick(){playTone({freq:350,dur:0.05,type:'square',gain:0.03});}
+updateSoundIcon();soundToggle.onclick=()=>{soundEnabled=!soundEnabled;localStorage.setItem(LS_SOUND,soundEnabled?"1":"0");updateSoundIcon();};
+
+/* الثيم */
+let dark=(localStorage.getItem(LS_THEME)==="1");
+function applyTheme(){document.body.classList.toggle('dark',dark);themeToggle.textContent=dark?"☀️":"🌙";}
+applyTheme();themeToggle.onclick=()=>{dark=!dark;localStorage.setItem(LS_THEME,dark?"1":"0");applyTheme();};
+
+/* تحميل القرآن */
+async function ensureQ(){if(Q)return;const res=await fetch('quran.json');if(!res.ok){alert('تعذّر تحميل quran.json — ضع الملف بجوار هذه الصفحة.');throw new Error('quran.json missing');}Q=await res.json();FLAT=linearize(Q);fillSurahDropdowns();}
+function fillAyahs(sSurahId,sAyahId,pre){const surahId=parseInt(document.getElementById(sSurahId).value,10);const s=Q.surahs.find(x=>x.index===surahId);const target=document.getElementById(sAyahId);target.innerHTML="";for(let j=1;j<=s.ayah_count;j++){target.add(new Option(j,j));}if(pre)target.value=String(pre);}
+function syncSurahInput(e,sel){const v=e.target.value.trim();const s=Q.surahs.find(x=>x.name_ar===v);if(s){sel.value=s.index;sel.dispatchEvent(new Event('change'));}}
+function fillSurahDropdowns(){const fS=document.getElementById('fromSurah'),tS=document.getElementById('toSurah'),cS=document.getElementById('countSurah');const dl=document.getElementById('surahList');dl.innerHTML="";for(const s of Q.surahs){fS.add(new Option(s.name_ar,s.index));tS.add(new Option(s.name_ar,s.index));cS.add(new Option(s.name_ar,s.index));const d=document.createElement('option');d.value=s.name_ar;dl.appendChild(d);}fS.onchange=()=>fillAyahs('fromSurah','fromAyah',1);tS.onchange=()=>fillAyahs('toSurah','toAyah');cS.onchange=()=>fillAyahs('countSurah','countAyah',1);document.getElementById('fromSurahInput').oninput=e=>syncSurahInput(e,fS);document.getElementById('toSurahInput').oninput=e=>syncSurahInput(e,tS);document.getElementById('countSurahInput').oninput=e=>syncSurahInput(e,cS);fS.value="1";tS.value="1";cS.value="1";fillAyahs('fromSurah','fromAyah',1);const first=Q.surahs.find(x=>x.index===1);fillAyahs('toSurah','toAyah',first.ayah_count);fillAyahs('countSurah','countAyah',1);}
+
+/* بناء النطاقات */
+function makeContextTokens(startAyIndex){const tokens=[];let ptr=startAyIndex-1;while(tokens.length<ctxCount&&ptr>=0){const rev=FLAT[ptr].words.slice().reverse();for(const tok of rev){if(tokens.length<ctxCount)tokens.push(tok);}ptr--;}tokens.reverse();return tokens.map(t=>({sid:FLAT[startAyIndex].sid,ay:FLAT[startAyIndex].ay,text:t,wrong:false,shown:true,isContext:true}));}
+function loadRangeByRefs(fromRef,toRef){const startAy=refToFlatIndex(fromRef),endAy=refToFlatIndex(toRef);if(startAy<0||endAy<0||endAy<startAy)throw new Error("نطاق غير صحيح");const ctx=makeContextTokens(startAy);const range=[];for(let a=startAy;a<=endAy;a++){for(const token of FLAT[a].words){range.push({sid:FLAT[a].sid,ay:FLAT[a].ay,text:token,wrong:false,shown:false,isContext:false});}}words=[...ctx,...range];currentRangeMeta={mode:"range",from:fromRef,to:toRef};beginTraining();const sFrom=surahName(FLAT[startAy].sid),sTo=surahName(FLAT[endAy].sid);rangeInfo.textContent=`النطاق: ${fromRef.s}:${fromRef.a} (${sFrom}) → ${toRef.s}:${toRef.a} (${sTo}). • سياق ${ctx.length} كلمة.`;}
+function makeCountRange(fromRef,count){const startAy=refToFlatIndex(fromRef);if(startAy<0)throw new Error("بداية غير صحيحة");let collected=0,endAy=startAy;for(let a=startAy;a<FLAT.length;a++){collected+=FLAT[a].words.length;if(collected>=count){endAy=a;break;}}loadRangeByRefs(fromRef,{s:FLAT[endAy].sid,a:FLAT[endAy].ay});currentRangeMeta={mode:"count",from:fromRef,count:count,to:{s:FLAT[endAy].sid,a:FLAT[endAy].ay}};countInfo.textContent=`توليد: ${fromRef.s}:${fromRef.a} → ${FLAT[endAy].sid}:${FLAT[endAy].ay} (≈ ${count} كلمة، حتى نهاية آية).`;}
+
+/* التحفيظ والمراجعة */
+function renderTraining(){const parts=[];for(const w of words){if(w.isContext)parts.push(`<span class="w ctx">${escapeHTML(w.text)}</span>`);else if(w.shown)parts.push(`<span class="w shown${w.wrong?' wrongTag':''}">${escapeHTML(w.text)}${w.wrong?' ❌':''}</span>`);else break;}if(state==="training"&&i<words.length)parts.push(`<span class="caret"></span>`);textDiv.innerHTML=parts.join(' ')||'<div class="ctx">ابدأ من شاشة البداية لاختيار النطاق.</div>';const total=words.filter(w=>!w.isContext).length;const seen=Math.max(0,i-words.filter(w=>w.isContext).length);prog.textContent=(state==="training")?`التحفيظ — كلمة ${Math.max(0,seen)} من ${total}`:'';scrollToBottom();}
+function showFinalScore(){const all=words.filter(w=>!w.isContext);const correct=all.filter(w=>!w.wrong).length;const total=all.length;const percent=Math.round((correct/total)*100);let msg="",cls="";if(percent>=95){msg=`🌟 نتيجتك ${percent}% — مستواك ممتاز جدًا، أحسنت!`;cls="excellent";}else if(percent>=85){msg=`✅ نتيجتك ${percent}% — مستواك جيد جدًا، واصل التقدم!`;cls="verygood";}else if(percent>=70){msg=`🙂 نتيجتك ${percent}% — مستواك جيد، راجع مواضع الخطأ.`;cls="good";}else{msg=`🔁 نتيجتك ${percent}% — تحتاج مراجعة إضافية، أعد الحفظ بإذن الله.`;cls="weak";}const box=document.createElement('div');box.className=`result-box ${cls}`;box.textContent=msg;textDiv.appendChild(box);startReviewBtn.style.display="inline-block";prog.textContent="اضغط «ابدأ المراجعة» لتثبيت الحفظ.";pageFlip();scrollToBottom();}
+function showNext(){if(state==="review"){reviewAdvance();return;}if(state!=="training")return;if(i<words.length){if(words[i].isContext){i++;showNext();return;}words[i].shown=true;i++;renderTraining();if(i>=words.length){nextBtn.style.display=toggleBtn.style.display=backBtn.style.display="none";showFinalScore();}}}
+function toggleWrong(){if(state!=="training")return;let idx=i-1;while(idx>=0&&words[idx].isContext)idx--;if(idx>=0){words[idx].wrong=!words[idx].wrong;renderTraining();}}
+function goBack(){if(state!=="training")return;if(i<=0)return;i--;while(i>0&&words[i].isContext)i--;words[i].shown=false;renderTraining();}
+function startReview(){reviewList=[];for(let idx=0;idx<words.length;idx++){if(!words[idx].isContext&&words[idx].wrong)reviewList.push(idx);}state="review";nextBtn.style.display="inline-block";startReviewBtn.style.display="none";toggleBtn.style.display="none";backBtn.style.display="none";step=1;coloredErrors=[];renderReviewStep();woodClick();}
+function renderReviewStep(){const errs=reviewList;const n=step;coloredErrors=errs.slice(0,Math.max(0,n-1));const upTo=(n<=errs.length)?errs[n-1]:words.length;let html="";for(let k=0;k<upTo;k++){const w=words[k];const cls=w.isContext?"ctx":(coloredErrors.includes(k)?"reviewedWrong":"shown");html+=`<span class="w ${cls}">${escapeHTML(w.text)}</span> `;}textDiv.innerHTML=html;if(n===errs.length+1){for(let k=upTo;k<words.length;k++){const w=words[k];const cls=w.isContext?"ctx":(coloredErrors.includes(k)?"reviewedWrong":"shown");textDiv.innerHTML+=`<span class="w ${cls}">${escapeHTML(w.text)}</span> `;}prog.textContent="";nextBtn.style.display="none";restartBtn.style.display="inline-block";textDiv.innerHTML+=`<br><div class='ok'>✅ أتممت المراجعة. مواضع الخطأ مميزة باللون الوردي.</div>`;chime();}else{const remain=(errs.length-n+1);prog.textContent=`المراجعة — متبقّي ${remain} موضع`;}scrollToBottom();}
+function reviewAdvance(){if(state==="review"){step++;renderReviewStep();}}
+
+/* بدء / حفظ */
+function beginTraining(){hideAllPanels();startSec.style.display='none';textWrap.style.display='block';state="training";i=words.findIndex(w=>!w.isContext);if(i<0)i=0;nextBtn.style.display="inline-block";toggleBtn.style.display="inline-block";backBtn.style.display="inline-block";startReviewBtn.style.display="none";restartBtn.style.display="none";renderTraining();}
+function makeRangeName(meta){return(meta.mode==="range")?`من ${meta.from.s}:${meta.from.a} إلى ${meta.to.s}:${meta.to.a}`:`من ${meta.from.s}:${meta.from.a} (~${meta.count} كلمة) → ${meta.to.s}:${meta.to.a}`;}
+function saveCurrentRange(){if(!currentRangeMeta){alert("لا يوجد نطاق لحفظه.");return;}const name=prompt("اسم النطاق للحفظ:",makeRangeName(currentRangeMeta));if(!name)return;const saved=JSON.parse(localStorage.getItem(LS_SAVED)||"[]");saved.push({name,meta:currentRangeMeta,date:Date.now()});localStorage.setItem(LS_SAVED,JSON.stringify(saved));alert("تم حفظ النطاق في محفوظاتك.");}
+saveRangeBtn.onclick=saveCurrentRange;
+function renderSavedList(){const box=document.getElementById('savedList');const saved=JSON.parse(localStorage.getItem(LS_SAVED)||"[]");box.innerHTML=saved.length?"":"<div class='saveMeta'>لا توجد نطاقات محفوظة بعد.</div>";saved.forEach((item,idx)=>{const div=document.createElement('div');div.className='saveCard';const metaText=makeRangeName(item.meta);div.innerHTML=`<div><div><strong>${escapeHTML(item.name)}</strong></div><div class='saveMeta'>${escapeHTML(metaText)}</div></div><div class='row'><button class='btn' data-idx='${idx}' data-act='load'>تحميل</button><button class='btn danger' data-idx='${idx}' data-act='del'>حذف</button></div>`;box.appendChild(div);});box.onclick=(e)=>{const t=e.target;if(t.tagName!=="BUTTON")return;const idx=parseInt(t.getAttribute('data-idx'),10);const act=t.getAttribute('data-act');const saved=JSON.parse(localStorage.getItem(LS_SAVED)||"[]");const item=saved[idx];if(!item)return;if(act==='del'){if(confirm("حذف هذا النطاق من محفوظاتك؟")){saved.splice(idx,1);localStorage.setItem(LS_SAVED,JSON.stringify(saved));renderSavedList();}}else if(act==='load'){ensureQ().then(()=>{if(item.meta.mode==="range"){loadRangeByRefs(item.meta.from,item.meta.to);}else{makeCountRange(item.meta.from,item.meta.count);}});}};}
+
+/* إعادة المقطع نفسه */
+restartBtn.onclick=()=>{if(currentRangeMeta){ensureQ().then(()=>{if(currentRangeMeta.mode==="range"){loadRangeByRefs(currentRangeMeta.from,currentRangeMeta.to);}else{makeCountRange(currentRangeMeta.from,currentRangeMeta.count);}});}else{location.reload();}};
+
+/* تحميل النطاق/الكلمات */
+document.getElementById('loadRangeBtn').onclick=async()=>{await ensureQ();const from={s:parseInt(document.getElementById('fromSurah').value,10),a:parseInt(document.getElementById('fromAyah').value,10)};const to={s:parseInt(document.getElementById('toSurah').value,10),a:parseInt(document.getElementById('toAyah').value,10)};const fName=document.getElementById('fromSurahInput').value.trim();const tName=document.getElementById('toSurahInput').value.trim();const fAyIn=document.getElementById('fromAyahInput').value.trim();const tAyIn=document.getElementById('toAyahInput').value.trim();const fS=Q.surahs.find(x=>x.name_ar===fName);if(fS)from.s=fS.index;const tS=Q.surahs.find(x=>x.name_ar===tName);if(tS)to.s=tS.index;if(fAyIn)from.a=parseInt(fAyIn,10);if(tAyIn)to.a=parseInt(tAyIn,10);loadRangeByRefs(from,to);};
+document.getElementById('generateCountBtn').onclick=async()=>{await ensureQ();const from={s:parseInt(document.getElementById('countSurah').value,10),a:parseInt(document.getElementById('countAyah').value,10)};const name=document.getElementById('countSurahInput').value.trim();const ayIn=document.getElementById('countAyahInput').value.trim();const s=Q.surahs.find(x=>x.name_ar===name);if(s)from.s=s.index;if(ayIn)from.a=parseInt(ayIn,10);const count=parseInt(document.getElementById('wordCount').value,10);if(!count||count<=0){alert("أدخل عدد كلمات صحيحاً.");return;}makeCountRange(from,count);};
+
+/* مفاتيح ولوحة لمس */
+document.addEventListener('keydown',(e)=>{if(e.key==="ArrowLeft")showNext();if(e.key==="ArrowDown")toggleWrong();if(e.key==="ArrowRight")goBack();});
+let sx=null,sy=null;textDiv.addEventListener('touchstart',(e)=>{const t=e.changedTouches[0];sx=t.clientX;sy=t.clientY;},{passive:true});
+textDiv.addEventListener('touchend',(e)=>{const t=e.changedTouches[0];const dx=t.clientX-(sx??t.clientX);const dy=t.clientY-(sy??t.clientY);const ax=Math.abs(dx),ay=Math.abs(dy);const SW=35;if(ax>ay&&ax>SW){if(dx<0)showNext();else goBack();}else if(ay>ax&&ay>SW){if(dy>0)toggleWrong();}},{passive:true});
+
+/* ابدأ */
+ensureQ();
 </script>
 </body>
 </html>
