@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مدرّب تحفيظ القرآن — v5.0 (نطاق آيات + سياق عابر للسور)</title>
+<style>
+  :root{
+    --bg:#f6f7fb; --fg:#111; --muted:#666;
+    --ok:#0a7a3b; --red:#b00020; --pink:#ffeaea;
+    --accent:#5dade2; --accent2:#58d68d; --warn:#f5b041; --weak:#f1948a;
+  }
+  body{font-family:"Scheherazade","Amiri",serif;background:var(--bg);color:var(--fg);margin:0;direction:rtl}
+  header{position:sticky;top:0;background:#fff;border-bottom:1px solid #e7e7e7;padding:12px 16px;z-index:3}
+  h1{font-size:20px;margin:0 0 6px}
+  #hint{font-size:14px;color:var(--muted)}
+  main{max-width:980px;margin:0 auto;padding:14px}
+  #panel{background:#fff;border:1px solid #e7e7e7;border-radius:12px;padding:12px 14px;margin-bottom:10px}
+  #panel label{display:inline-block;margin:6px 10px 6px 0}
+  input[type=text]{font-size:16px;padding:8px 10px;border:1px solid #ddd;border-radius:10px;width:120px;text-align:center}
+  #loadBtn{padding:10px 16px;border:1px solid #ddd;border-radius:10px;background:#fff;cursor:pointer}
+  #rangeInfo{margin-top:6px;color:var(--muted)}
+  #text{font-size:2.0em;line-height:1.9;text-align:justify;margin-top:12px;padding:12px;background:#fff;border:1px solid #eee;border-radius:12px;min-height:160px}
+  .w{padding:2px 4px;border-radius:6px}
+  .shown{background:#eaf7ef}
+  .wrongTag{color:var(--red);font-weight:bold}
+  .reviewedWrong{background:var(--pink);border-radius:6px}
+  .ctx{color:#888}
+  .caret{display:inline-block;width:.6em;border-bottom:2px solid var(--ok);margin:0 2px -2px 2px}
+  #progress{margin-top:8px;color:var(--muted)}
+  .bar{position:sticky;bottom:0;background:linear-gradient(180deg,rgba(246,247,251,.0),rgba(246,247,251,.9) 30%,rgba(246,247,251,1));padding:10px;border-top:1px solid #e7e7e7;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+  button.ctrl{font-size:1.05rem;padding:12px 18px;border-radius:12px;border:1px solid #ddd;background:#fff;cursor:pointer}
+  #startReviewBtn,#restartBtn{display:none}
+  .result-box{width:fit-content;margin:16px auto;padding:16px 24px;border-radius:12px;font-size:1.2em;color:#fff}
+  .excellent{background:var(--accent2)} .verygood{background:var(--accent)} .good{background:var(--warn)} .weak{background:var(--weak)}
+  #license{margin-top:14px;font-size:13px;color:#444;background:#fff;border:1px solid #eee;border-radius:12px;padding:10px}
+  a{color:#0b6aa2;text-decoration:none}
+  @media(min-width:900px){ #text{font-size:1.9em} }
+</style>
+</head>
+<body>
+<header>
+  <h1>🌿 مدرّب تحفيظ القرآن — v5.0</h1>
+  <div id="hint">التحكم: ⬅️ الكلمة التالية — ⬇️ تبديل علامة الخطأ — ➡️ عودة (أثناء التحفيظ). أثناء المراجعة: كل ضغطة ⬅️ تُكمل حتى ما قبل الخطأ التالي وتُبقي تلوين الأخطاء السابقة.</div>
+</header>
+
+<main>
+  <section id="panel">
+    <label>من (سورة:آية) <input id="fromRef" type="text" placeholder="13:8"></label>
+    <label>إلى (سورة:آية) <input id="toRef" type="text" placeholder="14:3"></label>
+    <button id="loadBtn">تحميل النطاق</button>
+    <div id="rangeInfo"></div>
+  </section>
+
+  <div id="text"></div>
+  <div id="progress"></div>
+
+  <div class="bar">
+    <button id="nextBtn" class="ctrl">➡️ الكلمة التالية</button>
+    <button id="toggleWrongBtn" class="ctrl">🔁 تبديل علامة الخطأ</button>
+    <button id="backBtn" class="ctrl">⬅️ عودة كلمة</button>
+    <button id="startReviewBtn" class="ctrl">🔁 ابدأ المراجعة</button>
+    <button id="restartBtn" class="ctrl">🔄 إعادة المقطع</button>
+  </div>
+
+  <section id="license">
+    <strong>Quran text source:</strong> Tanzil Project (<a href="https://tanzil.net" target="_blank">tanzil.net</a>) —
+    Text licensed under <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank">CC BY 3.0</a>.<br>
+    © 2007–2021 Tanzil Project — Changing the Quranic text is not allowed. Please check updates at tanzil.net/updates.
+  </section>
+</main>
+
+<script>
+// ---------------- Global state ----------------
+let Q = null;                 // loaded JSON
+let words = [];               // [{sid, ay, text, wrong, shown, isContext}]
+let i = 0;                    // training pointer
+let state = "idle";           // "idle" | "training" | "review"
+let reviewList = [];          // indices of wrong words (in 'words')
+let step = 1;
+let coloredErrors = [];
+let startIndexGlobal = 0;     // pointer in global linear words
+let ctxCount = 10;
+
+const textDiv = document.getElementById('text');
+const prog    = document.getElementById('progress');
+const nextBtn = document.getElementById('nextBtn');
+const toggleBtn = document.getElementById('toggleWrongBtn');
+const backBtn = document.getElementById('backBtn');
+const startReviewBtn = document.getElementById('startReviewBtn');
+const restartBtn = document.getElementById('restartBtn');
+const loadBtn = document.getElementById('loadBtn');
+const rangeInfo = document.getElementById('rangeInfo');
+const fromRef = document.getElementById('fromRef');
+const toRef   = document.getElementById('toRef');
+
+// --------------- Helpers -----------------
+function escapeHTML(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function parseRef(s){ // "13:8" -> {s:13, a:8}
+  const m = String(s||"").trim().match(/^(\d{1,3})\s*:\s*(\d{1,3})$/);
+  if(!m) return null;
+  return {s:parseInt(m[1],10), a:parseInt(m[2],10)};
+}
+function splitWords(ar){ // split by whitespace (keep Uthmani as-is)
+  return ar.trim().split(/\s+/).filter(Boolean);
+}
+function linearize(Q){ // produce array of {sid, ay, ayText, words[]}
+  const out = [];
+  for(const s of Q.surahs){
+    const sid = s.index;
+    let ayNo = 1;
+    for(const t of s.ayahs){
+      out.push({sid, ay:ayNo, text:t, words:splitWords(t)});
+      ayNo++;
+    }
+  }
+  return out;
+}
+let FLAT = null; // linearized ayat
+
+function refToFlatIndex(ref){
+  // returns start word index (by ayah start in FLAT)
+  for(let idx=0; idx<FLAT.length; idx++){
+    if(FLAT[idx].sid===ref.s && FLAT[idx].ay===ref.a) return idx;
+  }
+  return -1;
+}
+function collectRangeWords(fromRef, toRef){
+  const startAy = refToFlatIndex(fromRef);
+  const endAy   = refToFlatIndex(toRef);
+  if(startAy<0 || endAy<0 || endAy<startAy) throw new Error("نطاق غير صحيح");
+  // get 10-word context before start (may span previous ayat/surahs)
+  let contextTokens = [];
+  let ptr = startAy-1;
+  while(contextTokens.length<ctxCount && ptr>=0){
+    const w = FLAT[ptr].words.slice().reverse(); // from end backwards
+    for(const token of w){
+      if(contextTokens.length<ctxCount) contextTokens.push(token);
+    }
+    ptr--;
+  }
+  contextTokens.reverse();
+
+  // now range tokens
+  const rangeTokens = [];
+  for(let a=startAy; a<=endAy; a++){
+    for(const token of FLAT[a].words){
+      rangeTokens.push({sid:FLAT[a].sid, ay:FLAT[a].ay, text:token, wrong:false, shown:false, isContext:false});
+    }
+  }
+  // prepend context tokens as neutral (isContext=true)
+  const ctxObjs = contextTokens.map(t => ({sid:FLAT[startAy].sid, ay:FLAT[startAy].ay, text:t, wrong:false, shown:true, isContext:true}));
+
+  return {ctx:ctxObjs, range:rangeTokens, startAy, endAy};
+}
+
+// ---------------- UI renderers ----------------
+function renderTraining(){
+  const parts = [];
+  // show context (muted, already shown)
+  for(const w of words){
+    if(w.isContext){
+      parts.push(`<span class="w ctx">${escapeHTML(w.text)}</span>`);
+    }else if(w.shown){
+      parts.push(`<span class="w shown${w.wrong?' wrongTag':''}">${escapeHTML(w.text)}${w.wrong?' ❌':''}</span>`);
+    }else{
+      break;
+    }
+  }
+  if(state==="training" && i < words.length) parts.push(`<span class="caret"></span>`);
+  textDiv.innerHTML = parts.join(' ') || '<div class="ctx">ابدأ التحفيظ بعد اختيار النطاق.</div>';
+  const totalLearn = words.filter(w=>!w.isContext).length;
+  const seen = Math.max(0, i - words.filter(w=>w.isContext).length);
+  prog.textContent = (state==="training") ? `التحفيظ — كلمة ${Math.max(0,seen)} من ${totalLearn}` : '';
+}
+
+function showFinalScore(){
+  // compute percent on non-context words only
+  const all = words.filter(w=>!w.isContext);
+  const correct = all.filter(w=>!w.wrong).length;
+  const total = all.length;
+  const percent = Math.round((correct/total)*100);
+  let message="", cls="";
+  if(percent>=95){ message=`🌟 نتيجتك ${percent}% — مستواك ممتاز جدًا، أحسنت!`; cls="excellent";}
+  else if(percent>=85){ message=`✅ نتيجتك ${percent}% — مستواك جيد جدًا، واصل التقدم!`; cls="verygood";}
+  else if(percent>=70){ message=`🙂 نتيجتك ${percent}% — مستواك جيد، راجع مواضع الخطأ.`; cls="good";}
+  else { message=`🔁 نتيجتك ${percent}% — تحتاج مراجعة إضافية، أعد الحفظ بإذن الله.`; cls="weak";}
+  const box = document.createElement('div');
+  box.className = `result-box ${cls}`;
+  box.textContent = message;
+  textDiv.appendChild(box);
+  startReviewBtn.style.display="inline-block";
+  prog.textContent = "اضغط «ابدأ المراجعة» لتثبيت الحفظ.";
+}
+
+// --------------- Training actions ---------------
+function showNext(){
+  if(state==="review"){ reviewAdvance(); return; }
+  if(state!=="training") return;
+  if(i < words.length){
+    if(words[i].isContext){
+      // context tokens are pre-shown; skip to first non-context
+      i++;
+      showNext();
+      return;
+    }
+    words[i].shown = true;
+    i++;
+    renderTraining();
+    // when done: stop auto-start; show score & Start Review button
+    if(i>=words.length){
+      // hide training buttons
+      nextBtn.style.display = toggleBtn.style.display = backBtn.style.display = "none";
+      showFinalScore();
+    }
+  }
+}
+function toggleWrong(){
+  if(state!=="training") return;
+  // toggle wrong for last shown non-context word
+  let idx = i-1;
+  while(idx>=0 && words[idx].isContext) idx--;
+  if(idx>=0){
+    words[idx].wrong = !words[idx].wrong;
+    renderTraining();
+  }
+}
+function goBack(){
+  if(state!=="training") return;
+  // move pointer back but don't pass contexts
+  if(i<=0) return;
+  i--;
+  while(i>0 && words[i].isContext) i--; // keep within learnable words
+  words[i].shown = false;
+  renderTraining();
+}
+
+// --------------- Review (cumulative coloring) ---------------
+function startReview(){
+  // collect wrong indices (only within learnable words)
+  reviewList = [];
+  for(let idx=0; idx<words.length; idx++){
+    if(!words[idx].isContext && words[idx].wrong) reviewList.push(idx);
+  }
+  // prepare screen
+  state = "review";
+  nextBtn.style.display = "inline-block";
+  startReviewBtn.style.display = "none";
+  // training controls hidden except next
+  toggleBtn.style.display = "none";
+  backBtn.style.display = "none";
+  // initialize cumulative steps
+  step = 1;
+  coloredErrors = [];
+  renderReviewStep();
+}
+function renderReviewStep(){
+  // On step n: print from context start up to before error n (or end),
+  // and color all previous errors [0..n-2].
+  const errs = reviewList;
+  const n = step;
+  coloredErrors = errs.slice(0, Math.max(0, n-1));
+  const upTo = (n<=errs.length) ? errs[n-1] : (words.length); // exclusive
+
+  let html = "";
+  for(let k=0; k<upTo; k++){
+    const w = words[k];
+    const cls = w.isContext ? "ctx" : (coloredErrors.includes(k) ? "reviewedWrong" : "shown");
+    html += `<span class="w ${cls}">${escapeHTML(w.text)}</span> `;
+  }
+  textDiv.innerHTML = html;
+
+  if(n === errs.length + 1){
+    // final: print rest + finish
+    for(let k=upTo; k<words.length; k++){
+      const w = words[k];
+      const cls = w.isContext ? "ctx" : (coloredErrors.includes(k) ? "reviewedWrong" : "shown");
+      textDiv.innerHTML += `<span class="w ${cls}">${escapeHTML(w.text)}</span> `;
+    }
+    prog.textContent = "";
+    nextBtn.style.display = "none";
+    restartBtn.style.display = "inline-block";
+    textDiv.innerHTML += `<br><div class='ok'>✅ أتممت المراجعة. مواضع الخطأ مميزة باللون الوردي.</div>`;
+  }else{
+    const remain = (errs.length - n + 1);
+    prog.textContent = `المراجعة — متبقّي ${remain} موضع`;
+  }
+}
+function reviewAdvance(){
+  if(state!=="review") return;
+  step++;
+  renderReviewStep();
+}
+
+// --------------- Range loading ---------------
+async function ensureQ(){
+  if(Q) return;
+  const res = await fetch('quran.json'); // يجب أن يكون ملف quran.json بجوار هذا الملف
+  if(!res.ok){ throw new Error('تعذّر تحميل quran.json — ضع الملف بجوار صفحة HTML.'); }
+  Q = await res.json();
+  FLAT = linearize(Q);
+}
+async function loadRange(){
+  try{
+    await ensureQ();
+    const f = parseRef(fromRef.value);
+    const t = parseRef(toRef.value);
+    if(!f || !t) throw new Error("أدخل المراجع بصيغة سورة:آية مثل 13:8");
+    const {ctx, range, startAy, endAy} = collectRangeWords(f,t);
+    // build words list: context first (shown), then range
+    words = [...ctx, ...range];
+    // reset state
+    state = "training";
+    i = words.findIndex(w=>!w.isContext); // start at first learnable
+    if(i<0) i = 0;
+    // show UI
+    nextBtn.style.display = "inline-block";
+    toggleBtn.style.display = "inline-block";
+    backBtn.style.display = "inline-block";
+    startReviewBtn.style.display = "none";
+    restartBtn.style.display = "none";
+    // info
+    const sNameFrom = (Q.surahs.find(s=>s.index===FLAT[startAy].sid)||{}).name_ar || ("سورة "+FLAT[startAy].sid);
+    const sNameTo   = (Q.surahs.find(s=>s.index===FLAT[endAy].sid)||{}).name_ar || ("سورة "+FLAT[endAy].sid);
+    rangeInfo.textContent = `النطاق: ${FLAT[startAy].sid}:${FLAT[startAy].ay} (${sNameFrom}) → ${FLAT[endAy].sid}:${FLAT[endAy].ay} (${sNameTo}). • تم تهيئة سياق (${ctx.length} كلمة) قبل البداية.`;
+    renderTraining();
+  }catch(e){
+    alert(e.message || e);
+  }
+}
+
+// --------------- Events ----------------
+loadBtn.onclick = loadRange;
+nextBtn.onclick = showNext;
+toggleBtn.onclick = toggleWrong;
+backBtn.onclick = goBack;
+startReviewBtn.onclick = startReview;
+restartBtn.onclick = ()=>location.reload();
+
+document.addEventListener('keydown', e=>{
+  if(e.key==="ArrowLeft") showNext();
+  if(e.key==="ArrowDown") toggleWrong();
+  if(e.key==="ArrowRight") goBack();
+});
+
+// Touch gestures (within text only)
+let touchStartX=null, touchStartY=null;
+textDiv.addEventListener('touchstart', e=>{
+  const t = e.changedTouches[0]; touchStartX=t.clientX; touchStartY=t.clientY;
+},{passive:true});
+textDiv.addEventListener('touchend', e=>{
+  const t = e.changedTouches[0];
+  const dx = t.clientX - (touchStartX??t.clientX);
+  const dy = t.clientY - (touchStartY??t.clientY);
+  const absX = Math.abs(dx), absY = Math.abs(dy);
+  const SWIPE = 35;
+  if(absX>absY && absX>SWIPE){
+    if(dx<0) showNext();        // left swipe -> next
+    else goBack();              // right swipe -> back
+  }else if(absY>absX && absY>SWIPE){
+    if(dy>0) toggleWrong();     // swipe down -> toggle wrong
+  }
+},{passive:true});
+
+</script>
+</body>
+</html>
