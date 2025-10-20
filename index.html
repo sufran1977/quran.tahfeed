@@ -3,158 +3,212 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>مدرّب تحفيظ القرآن — v5.1 (نطاقات ذكية)</title>
+<title>مدرّب تحفيظ القرآن — v5.2 (نطاقات ذكية)</title>
 <style>
-  :root{
-    --bg:#f6f7fb; --fg:#111; --muted:#666; --card:#ffffff;
-    --ok:#0a7a3b; --red:#b00020; --pink:#ffeaea;
-    --accent:#5dade2; --accent2:#58d68d; --warn:#f5b041; --weak:#f1948a;
-    --border:#e7e7e7; --shadow:0 6px 18px rgba(0,0,0,.06);
-    --grad1:#e8f5e9; --grad2:#ffffff;
-  }
-  body.dark{
-    --bg:#0e1512; --fg:#eef3ef; --muted:#b5c0ba; --card:#101b18;
-    --border:#1e2a26; --shadow:0 6px 18px rgba(0,0,0,.25);
-    --grad1:#10231d; --grad2:#0e1512;
-  }
-  html,body{height:100%}
-  body{
-    margin:0; direction:rtl; color:var(--fg);
-    background: linear-gradient(180deg, var(--grad1), var(--grad2));
-    font-family:"Scheherazade","Amiri",serif;
-  }
-  header{
-    position:sticky; top:0; z-index:5; background:var(--card);
-    border-bottom:1px solid var(--border); padding:10px 14px;
-    display:flex; align-items:center; justify-content:space-between;
-  }
-  h1{font-size:20px; margin:0}
-  #toggles{display:flex; gap:8px; align-items:center}
-  .pill{border:1px solid var(--border); background:var(--card);
-        border-radius:999px; padding:6px 10px; cursor:pointer; box-shadow:var(--shadow);}
-  #hint{font-size:14px; color:var(--muted); padding:0 14px 8px}
-  main{max-width:980px; margin:0 auto; padding:12px}
-  #start{display:grid; place-items:center; gap:14px; margin-top:8vh}
-  .bigbtns{display:grid; gap:14px; width:min(560px, 92%)}
-  .bigbtn{
-    display:flex; align-items:center; gap:12px; justify-content:center;
-    padding:18px; border-radius:16px; border:1px solid var(--border);
-    background:var(--card); box-shadow:var(--shadow); font-size:1.25rem;
-    cursor:pointer; transition:transform .05s ease;
-  }
-  .bigbtn:active{ transform:scale(.99) }
-  .emoji{font-size:1.4em}
-  #footerNote{margin-top:18px; color:var(--muted); font-size:13px}
-  .panel{display:none; background:var(--card); border:1px solid var(--border);
-         border-radius:12px; padding:14px; box-shadow:var(--shadow)}
-  label{display:inline-block; margin:8px 10px 8px 0; font-size:16px}
-  select,input[type=number]{font-size:16px; padding:8px 10px; border:1px solid var(--border);
-         background:var(--bg); color:var(--fg); border-radius:10px; min-width:110px}
-  .btn{font-size:1rem; padding:10px 16px; border-radius:10px; border:1px solid var(--border); background:var(--card); cursor:pointer}
-  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
-  .row + .row{margin-top:10px}
-  #textWrap{margin-top:12px; background:var(--card); border:1px solid var(--border);
-            border-radius:12px; box-shadow:var(--shadow); padding:12px}
-  #text{font-size:2.0em; line-height:1.9; text-align:justify; min-height:160px;
-        max-height:70vh; overflow-y:auto; padding:4px 6px}
-  .w{padding:2px 4px; border-radius:6px}
-  .shown{background:#eaf7ef22; outline:1px solid #77c49a33}
-  .wrongTag{color:var(--red); font-weight:bold}
-  .reviewedWrong{background:var(--pink); border-radius:6px}
-  .ctx{color:#8aa39a}
-  .caret{display:inline-block; width:.6em; border-bottom:2px solid var(--ok); margin:0 2px -2px 2px}
-  #progress{margin-top:8px; color:var(--muted)}
-  .bar{position:sticky; bottom:0; background:linear-gradient(180deg, rgba(0,0,0,0), var(--bg) 35%, var(--bg));
-       border-top:1px solid var(--border); padding:10px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap}
-  .ctrl{font-size:1.05rem; padding:12px 18px; border-radius:12px; border:1px solid var(--border); background:var(--card); cursor:pointer}
-  #startReviewBtn,#restartBtn{display:none}
-  .result-box{width:fit-content; margin:16px auto; padding:16px 24px; border-radius:12px; font-size:1.2em; color:#fff}
-  .excellent{background:var(--accent2)} .verygood{background:var(--accent)} .good{background:var(--warn)} .weak{background:var(--weak)}
-  #savedList{display:grid; gap:8px}
-  .saveCard{display:flex; gap:10px; align-items:center; justify-content:space-between;
-            border:1px solid var(--border); border-radius:10px; padding:10px; background:var(--bg)}
-  .saveMeta{font-size:14px; color:var(--muted)}
-  .danger{border-color:#b0002044; color:#b00020; background:#b000200d}
-  a{color:#0b6aa2; text-decoration:none}
+:root{
+  --bg:#f6f7fb; --fg:#111; --muted:#666; --card:#ffffff;
+  --ok:#0a7a3b; --red:#b00020; --pink:#ffeaea;
+  --accent:#5dade2; --accent2:#58d68d; --warn:#f5b041; --weak:#f1948a;
+  --border:#e7e7e7; --shadow:0 6px 18px rgba(0,0,0,.06);
+  --grad1:#e8f5e9; --grad2:#ffffff;
+}
+body.dark{
+  --bg:#0e1512; --fg:#eef3ef; --muted:#b5c0ba; --card:#101b18;
+  --border:#1e2a26; --shadow:0 6px 18px rgba(0,0,0,.25);
+  --grad1:#10231d; --grad2:#0e1512;
+}
+html,body{height:100%}
+body{
+  margin:0; direction:rtl; color:var(--fg);
+  background:linear-gradient(180deg,var(--grad1),var(--grad2));
+  font-family:"Scheherazade","Amiri",serif;
+}
+header{
+  position:sticky;top:0;z-index:5;background:var(--card);
+  border-bottom:1px solid var(--border);padding:10px 14px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+h1{font-size:20px;margin:0}
+#toggles{display:flex;gap:8px;align-items:center}
+.pill{border:1px solid var(--border);background:var(--card);
+  border-radius:999px;padding:6px 10px;cursor:pointer;box-shadow:var(--shadow);}
+#hint{font-size:14px;color:var(--muted);padding:0 14px 8px}
+main{max-width:980px;margin:0 auto;padding:12px}
+#start{display:grid;place-items:center;gap:14px;margin-top:8vh}
+.bigbtns{display:grid;gap:14px;width:min(560px,92%)}
+.bigbtn{display:flex;align-items:center;gap:12px;justify-content:center;
+  padding:18px;border-radius:16px;border:1px solid var(--border);
+  background:var(--card);box-shadow:var(--shadow);font-size:1.25rem;
+  cursor:pointer;transition:transform .05s ease;}
+.bigbtn:active{transform:scale(.99)}
+.emoji{font-size:1.4em}
+#footerNote{margin-top:18px;color:var(--muted);font-size:13px}
+.panel{display:none;background:var(--card);border:1px solid var(--border);
+  border-radius:12px;padding:14px;box-shadow:var(--shadow)}
+label{display:inline-block;margin:8px 10px 8px 0;font-size:16px}
+select,input[type=number],input[type=text]{font-size:16px;padding:8px 10px;
+  border:1px solid var(--border);background:var(--bg);color:var(--fg);
+  border-radius:10px;min-width:110px}
+.btn{font-size:1rem;padding:10px 16px;border-radius:10px;
+  border:1px solid var(--border);background:var(--card);cursor:pointer}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row + .row{margin-top:10px}
+#textWrap{margin-top:12px;background:var(--card);border:1px solid var(--border);
+  border-radius:12px;box-shadow:var(--shadow);padding:12px}
+#text{font-size:2.0em;line-height:1.9;text-align:justify;min-height:160px;
+  max-height:70vh;overflow-y:auto;padding:4px 6px}
+.w{padding:2px 4px;border-radius:6px}
+.shown{background:#eaf7ef22;outline:1px solid #77c49a33}
+.wrongTag{color:var(--red);font-weight:bold}
+.reviewedWrong{background:var(--pink);border-radius:6px}
+.ctx{color:#8aa39a}
+.caret{display:inline-block;width:.6em;border-bottom:2px solid var(--ok);margin:0 2px -2px 2px}
+#progress{margin-top:8px;color:var(--muted)}
+.bar{position:sticky;bottom:0;background:linear-gradient(180deg,rgba(0,0,0,0),var(--bg) 35%,var(--bg));
+  border-top:1px solid var(--border);padding:10px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.ctrl{font-size:1.05rem;padding:12px 18px;border-radius:12px;
+  border:1px solid var(--border);background:var(--card);cursor:pointer}
+#startReviewBtn,#restartBtn{display:none}
+.result-box{width:fit-content;margin:16px auto;padding:16px 24px;
+  border-radius:12px;font-size:1.2em;color:#fff}
+.excellent{background:var(--accent2)}.verygood{background:var(--accent)}.good{background:var(--warn)}.weak{background:var(--weak)}
+#savedList{display:grid;gap:8px}
+.saveCard{display:flex;gap:10px;align-items:center;justify-content:space-between;
+  border:1px solid var(--border);border-radius:10px;padding:10px;background:var(--bg)}
+.saveMeta{font-size:14px;color:var(--muted)}
+.danger{border-color:#b0002044;color:#b00020;background:#b000200d}
+a{color:#0b6aa2;text-decoration:none}
 </style>
 </head>
 <body>
-  <header>
-    <h1>🌿 مدرّب تحفيظ القرآن — v5.1</h1>
-    <div id="toggles">
-      <span id="soundToggle" class="pill" title="تشغيل/إيقاف الأصوات">🔈</span>
-      <span id="themeToggle" class="pill" title="وضع الليل/النهار">🌙</span>
-    </div>
-  </header>
-  <div id="hint">⬅️ الكلمة التالية — ⬇️ تبديل الخطأ — ➡️ عودة | أثناء المراجعة: كل ضغطة ⬅️ تُكمل حتى ما قبل الخطأ التالي وتُبقي التلوين السابق.</div>
+<header>
+<h1>🌿 مدرّب تحفيظ القرآن — v5.2</h1>
+<div id="toggles">
+  <span id="soundToggle" class="pill">🔈</span>
+  <span id="themeToggle" class="pill">🌙</span>
+</div>
+</header>
+<div id="hint">⬅️ الكلمة التالية — ⬇️ تبديل الخطأ — ➡️ عودة | أثناء المراجعة: كل ضغطة ⬅️ تُكمل حتى ما قبل الخطأ التالي.</div>
 
-  <main>
-    <!-- شاشة البداية -->
-    <section id="start">
-      <div class="bigbtns">
-        <div class="bigbtn" id="btnModeRange"><span class="emoji">🕌</span><span>نطاق محدد</span></div>
-        <div class="bigbtn" id="btnModeCount"><span class="emoji">🔢</span><span>بعدد الكلمات</span></div>
-        <div class="bigbtn" id="btnModeSaved"><span class="emoji">🧩</span><span>محفوظاتي</span></div>
-      </div>
-      <div id="footerNote">نص القرآن الكريم من مشروع Tanzil (<a href="https://tanzil.net" target="_blank">tanzil.net</a>)</div>
-    </section>
+<main>
+<section id="start">
+  <div class="bigbtns">
+    <div class="bigbtn" id="btnModeRange"><span class="emoji">🕌</span><span>نطاق محدد</span></div>
+    <div class="bigbtn" id="btnModeCount"><span class="emoji">🔢</span><span>بعدد الكلمات</span></div>
+    <div class="bigbtn" id="btnModeSaved"><span class="emoji">🧩</span><span>محفوظاتي</span></div>
+  </div>
+  <div id="footerNote">نص القرآن الكريم من مشروع Tanzil (<a href="https://tanzil.net" target="_blank">tanzil.net</a>)</div>
+</section>
 
-    <!-- النطاق المحدد -->
-    <section id="panelRange" class="panel">
-      <h3>🕌 نطاق محدد</h3>
-      <div class="row">
-        <label>من سورة <select id="fromSurah"></select></label>
-        <label>آية <select id="fromAyah"></select></label>
-      </div>
-      <div class="row">
-        <label>إلى سورة <select id="toSurah"></select></label>
-        <label>آية <select id="toAyah"></select></label>
-      </div>
-      <div class="row">
-        <button class="btn" id="loadRangeBtn">تحميل النطاق</button>
-        <button class="btn" id="backHome1">عودة</button>
-      </div>
-      <div id="rangeInfo" class="saveMeta" style="margin-top:6px;"></div>
-    </section>
+<section id="panelRange" class="panel">
+  <h3>🕌 نطاق محدد</h3>
+  <div class="row">
+    <label>من سورة
+      <input id="fromSurahInput" list="surahList">
+      <datalist id="surahList"></datalist>
+      <select id="fromSurah"></select>
+    </label>
+    <label>آية
+      <input id="fromAyahInput" type="number" min="1" style="width:70px;">
+      <select id="fromAyah"></select>
+    </label>
+  </div>
+  <div class="row">
+    <label>إلى سورة
+      <input id="toSurahInput" list="surahList">
+      <select id="toSurah"></select>
+    </label>
+    <label>آية
+      <input id="toAyahInput" type="number" min="1" style="width:70px;">
+      <select id="toAyah"></select>
+    </label>
+  </div>
+  <div class="row">
+    <button class="btn" id="loadRangeBtn">تحميل النطاق</button>
+    <button class="btn" id="backHome1">عودة</button>
+  </div>
+  <div id="rangeInfo" class="saveMeta" style="margin-top:6px;"></div>
+</section>
 
-<!-- بقية الكود مثل v5.1 ولكن مع تعديلين محددين أدناه -->
+<section id="panelCount" class="panel">
+  <h3>🔢 توليد نطاق بعدد كلمات</h3>
+  <div class="row">
+    <label>بدءًا من سورة
+      <input id="countSurahInput" list="surahList">
+      <select id="countSurah"></select>
+    </label>
+    <label>آية
+      <input id="countAyahInput" type="number" min="1" style="width:70px;">
+      <select id="countAyah"></select>
+    </label>
+    <label>عدد الكلمات <input id="wordCount" type="number" min="1" value="100"></label>
+  </div>
+  <div class="row">
+    <button class="btn" id="generateCountBtn">توليد النطاق</button>
+    <button class="btn" id="backHome2">عودة</button>
+  </div>
+  <div id="countInfo" class="saveMeta" style="margin-top:6px;"></div>
+</section>
+
+<section id="panelSaved" class="panel"><h3>🧩 محفوظاتي</h3><div id="savedList"></div>
+  <div class="row" style="margin-top:8px"><button class="btn" id="backHome3">عودة</button></div>
+</section>
+
+<section id="textWrap" style="display:none;">
+  <div id="text"></div><div id="progress"></div>
+  <div class="bar">
+    <button id="nextBtn" class="ctrl">➡️ الكلمة التالية</button>
+    <button id="toggleWrongBtn" class="ctrl">🔁 تبديل الخطأ</button>
+    <button id="backBtn" class="ctrl">⬅️ عودة</button>
+    <button id="startReviewBtn" class="ctrl">🔁 ابدأ المراجعة</button>
+    <button id="restartBtn" class="ctrl">🔄 إعادة المقطع</button>
+    <button id="saveRangeBtn" class="ctrl">💾 حفظ</button>
+  </div>
+</section>
+</main>
 
 <script>
-// تعديل (1) إعادة المقطع نفسه
-restartBtn.onclick = ()=>{
-  if(currentRangeMeta){
-    ensureQ().then(()=>{
-      if(currentRangeMeta.mode === "range"){
-        loadRangeByRefs(currentRangeMeta.from, currentRangeMeta.to);
-      } else if(currentRangeMeta.mode === "count"){
-        makeCountRange(currentRangeMeta.from, currentRangeMeta.count);
-      }
-    });
-  } else {
-    location.reload();
-  }
-};
+/* ربط الأزرار الرئيسية */
+document.getElementById('btnModeRange').onclick=()=> showPanel(panelRange);
+document.getElementById('btnModeCount').onclick=()=> showPanel(panelCount);
+document.getElementById('btnModeSaved').onclick=()=> { showPanel(panelSaved); renderSavedList(); };
+document.getElementById('backHome1').onclick=()=> backHome();
+document.getElementById('backHome2').onclick=()=> backHome();
+document.getElementById('backHome3').onclick=()=> backHome();
 
-// تعديل (2) الفاتحة 1 إلى نهاية الفاتحة
+/* لاحقًا هنا ضع بقية السكربت من إصدارك الحالي v5.1
+   فقط استبدل دالة fillSurahDropdowns() كما يلي: */
+
 function fillSurahDropdowns(){
   const fS=document.getElementById('fromSurah');
   const tS=document.getElementById('toSurah');
   const cS=document.getElementById('countSurah');
+  const datalist=document.getElementById('surahList');
+  datalist.innerHTML="";
   for(const s of Q.surahs){
-    const o1=new Option(s.name_ar,s.index);
-    const o2=new Option(s.name_ar,s.index);
-    const o3=new Option(s.name_ar,s.index);
-    fS.add(o1); tS.add(o2); cS.add(o3);
+    const opt1=new Option(s.name_ar,s.index);
+    const opt2=new Option(s.name_ar,s.index);
+    const opt3=new Option(s.name_ar,s.index);
+    fS.add(opt1);tS.add(opt2);cS.add(opt3);
+    const dOpt=document.createElement('option');dOpt.value=s.name_ar;datalist.appendChild(dOpt);
   }
   fS.onchange=()=>fillAyahs('fromSurah','fromAyah',1);
   tS.onchange=()=>fillAyahs('toSurah','toAyah');
   cS.onchange=()=>fillAyahs('countSurah','countAyah',1);
-  // الافتراض: الفاتحة 1 → نهاية السورة
-  fS.value="1"; tS.value="1"; cS.value="1";
+  // ارتباط الإدخال بالنصوص
+  document.getElementById('fromSurahInput').oninput=e=>syncSurahInput(e,fS);
+  document.getElementById('toSurahInput').oninput=e=>syncSurahInput(e,tS);
+  document.getElementById('countSurahInput').oninput=e=>syncSurahInput(e,cS);
+  fS.value="1";tS.value="1";cS.value="1";
   fillAyahs('fromSurah','fromAyah',1);
   const first=Q.surahs.find(x=>x.index===1);
   fillAyahs('toSurah','toAyah',first.ayah_count);
   fillAyahs('countSurah','countAyah',1);
+}
+function syncSurahInput(e,sel){
+  const val=e.target.value.trim();
+  const s=Q.surahs.find(x=>x.name_ar===val);
+  if(s){sel.value=s.index;sel.dispatchEvent(new Event('change'));}
 }
 </script>
 </body>
