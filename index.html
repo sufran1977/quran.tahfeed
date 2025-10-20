@@ -34,7 +34,6 @@
         border-radius:999px; padding:6px 10px; cursor:pointer; box-shadow:var(--shadow);}
   #hint{font-size:14px; color:var(--muted); padding:0 14px 8px}
   main{max-width:980px; margin:0 auto; padding:12px}
-  /* Start screen */
   #start{display:grid; place-items:center; gap:14px; margin-top:8vh}
   .bigbtns{display:grid; gap:14px; width:min(560px, 92%)}
   .bigbtn{
@@ -46,7 +45,6 @@
   .bigbtn:active{ transform:scale(.99) }
   .emoji{font-size:1.4em}
   #footerNote{margin-top:18px; color:var(--muted); font-size:13px}
-  /* Panels */
   .panel{display:none; background:var(--card); border:1px solid var(--border);
          border-radius:12px; padding:14px; box-shadow:var(--shadow)}
   label{display:inline-block; margin:8px 10px 8px 0; font-size:16px}
@@ -55,7 +53,6 @@
   .btn{font-size:1rem; padding:10px 16px; border-radius:10px; border:1px solid var(--border); background:var(--card); cursor:pointer}
   .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
   .row + .row{margin-top:10px}
-  /* Text area */
   #textWrap{margin-top:12px; background:var(--card); border:1px solid var(--border);
             border-radius:12px; box-shadow:var(--shadow); padding:12px}
   #text{font-size:2.0em; line-height:1.9; text-align:justify; min-height:160px;
@@ -67,15 +64,12 @@
   .ctx{color:#8aa39a}
   .caret{display:inline-block; width:.6em; border-bottom:2px solid var(--ok); margin:0 2px -2px 2px}
   #progress{margin-top:8px; color:var(--muted)}
-  /* Sticky controls */
   .bar{position:sticky; bottom:0; background:linear-gradient(180deg, rgba(0,0,0,0), var(--bg) 35%, var(--bg));
        border-top:1px solid var(--border); padding:10px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap}
   .ctrl{font-size:1.05rem; padding:12px 18px; border-radius:12px; border:1px solid var(--border); background:var(--card); cursor:pointer}
   #startReviewBtn,#restartBtn{display:none}
-  /* Result card */
   .result-box{width:fit-content; margin:16px auto; padding:16px 24px; border-radius:12px; font-size:1.2em; color:#fff}
   .excellent{background:var(--accent2)} .verygood{background:var(--accent)} .good{background:var(--warn)} .weak{background:var(--weak)}
-  /* Saved ranges list */
   #savedList{display:grid; gap:8px}
   .saveCard{display:flex; gap:10px; align-items:center; justify-content:space-between;
             border:1px solid var(--border); border-radius:10px; padding:10px; background:var(--bg)}
@@ -95,7 +89,7 @@
   <div id="hint">⬅️ الكلمة التالية — ⬇️ تبديل الخطأ — ➡️ عودة | أثناء المراجعة: كل ضغطة ⬅️ تُكمل حتى ما قبل الخطأ التالي وتُبقي التلوين السابق.</div>
 
   <main>
-    <!-- Start screen -->
+    <!-- شاشة البداية -->
     <section id="start">
       <div class="bigbtns">
         <div class="bigbtn" id="btnModeRange"><span class="emoji">🕌</span><span>نطاق محدد</span></div>
@@ -105,24 +99,16 @@
       <div id="footerNote">نص القرآن الكريم من مشروع Tanzil (<a href="https://tanzil.net" target="_blank">tanzil.net</a>)</div>
     </section>
 
-    <!-- Panels -->
+    <!-- النطاق المحدد -->
     <section id="panelRange" class="panel">
       <h3>🕌 نطاق محدد</h3>
       <div class="row">
-        <label>من سورة
-          <select id="fromSurah"></select>
-        </label>
-        <label>آية
-          <select id="fromAyah"></select>
-        </label>
+        <label>من سورة <select id="fromSurah"></select></label>
+        <label>آية <select id="fromAyah"></select></label>
       </div>
       <div class="row">
-        <label>إلى سورة
-          <select id="toSurah"></select>
-        </label>
-        <label>آية
-          <select id="toAyah"></select>
-        </label>
+        <label>إلى سورة <select id="toSurah"></select></label>
+        <label>آية <select id="toAyah"></select></label>
       </div>
       <div class="row">
         <button class="btn" id="loadRangeBtn">تحميل النطاق</button>
@@ -131,11 +117,10 @@
       <div id="rangeInfo" class="saveMeta" style="margin-top:6px;"></div>
     </section>
 
-    <!-- باقي الكود نفسه كما في الإصدار السابق -->
+<!-- بقية الكود مثل v5.1 ولكن مع تعديلين محددين أدناه -->
 
 <script>
-// ... نفس الكود السابق كله حتى تصل إلى هذا الجزء:
-
+// تعديل (1) إعادة المقطع نفسه
 restartBtn.onclick = ()=>{
   if(currentRangeMeta){
     ensureQ().then(()=>{
@@ -150,25 +135,25 @@ restartBtn.onclick = ()=>{
   }
 };
 
-// وعند تحميل القوائم المنسدلة، اجعل السورة الافتراضية الفاتحة والآيات الافتراضية 1–نهاية السورة:
+// تعديل (2) الفاتحة 1 إلى نهاية الفاتحة
 function fillSurahDropdowns(){
-  const fS = document.getElementById('fromSurah');
-  const tS = document.getElementById('toSurah');
-  const cS = document.getElementById('countSurah');
+  const fS=document.getElementById('fromSurah');
+  const tS=document.getElementById('toSurah');
+  const cS=document.getElementById('countSurah');
   for(const s of Q.surahs){
-    const opt1=new Option(s.name_ar, s.index);
-    const opt2=new Option(s.name_ar, s.index);
-    const opt3=new Option(s.name_ar, s.index);
-    fS.add(opt1); tS.add(opt2); cS.add(opt3);
+    const o1=new Option(s.name_ar,s.index);
+    const o2=new Option(s.name_ar,s.index);
+    const o3=new Option(s.name_ar,s.index);
+    fS.add(o1); tS.add(o2); cS.add(o3);
   }
-  fS.onchange=()=> fillAyahs('fromSurah','fromAyah',1);
-  tS.onchange=()=> fillAyahs('toSurah','toAyah');
-  cS.onchange=()=> fillAyahs('countSurah','countAyah',1);
-  // الافتراض الفاتحة: 1:1
+  fS.onchange=()=>fillAyahs('fromSurah','fromAyah',1);
+  tS.onchange=()=>fillAyahs('toSurah','toAyah');
+  cS.onchange=()=>fillAyahs('countSurah','countAyah',1);
+  // الافتراض: الفاتحة 1 → نهاية السورة
   fS.value="1"; tS.value="1"; cS.value="1";
   fillAyahs('fromSurah','fromAyah',1);
-  const firstSurah = Q.surahs.find(x=>x.index===1);
-  fillAyahs('toSurah','toAyah',firstSurah.ayah_count);
+  const first=Q.surahs.find(x=>x.index===1);
+  fillAyahs('toSurah','toAyah',first.ayah_count);
   fillAyahs('countSurah','countAyah',1);
 }
 </script>
